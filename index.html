@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATON TECH Solutions | Smart Digital Solutions</title>
+    <meta name="description" content="ATON TECH Solutions - Premium Software Development and Digital Transformation.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        deepBlue: '#0A3D62',
+                        royalBlue: '#1E5EFF',
+                        vibrantOrange: '#FF6A00',
+                        lightOrange: '#FFA502',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hero-gradient': 'linear-gradient(135deg, #0A3D62 0%, #1E5EFF 50%, #FF6A00 100%)',
+                        'orange-gradient': 'linear-gradient(to right, #FF6A00, #FFA502)',
+                        'blue-gradient': 'linear-gradient(to right, #0A3D62, #1E5EFF)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .service-card:hover .glow {
+            opacity: 1;
+        }
+        .glow {
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 20px 2px rgba(30, 94, 255, 0.3);
+        }
+        .timeline-line {
+            background: linear-gradient(to bottom, #1E5EFF, #FF6A00);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-hot-toast": "https://esm.sh/react-hot-toast@^2.6.0",
+    "@emailjs/browser": "https://esm.sh/@emailjs/browser@^4.4.1",
+    "nodemailer": "https://esm.sh/nodemailer@^8.0.1",
+    "dotenv": "https://esm.sh/dotenv@^17.3.1",
+    "express": "https://esm.sh/express@^5.2.1",
+    "cors": "https://esm.sh/cors@^2.8.6"
+  }
+}
+</script>
+</head>
+<body class="bg-white dark:bg-darkBg transition-colors duration-300">
+    <div id="root"></div>
+</body>
+</html>

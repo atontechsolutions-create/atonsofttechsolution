@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Send, Phone, Mail, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import { submitContactForm } from '../services/supabase';
-import { sendAutoReply, sendLeadNotification } from '../services/emailService';
+import { sendLeadNotification } from '../services/emailService';
 import toast from 'react-hot-toast';
 
 const Contact: React.FC = () => {
@@ -25,33 +25,31 @@ const Contact: React.FC = () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Processing your request...");
+    const loadingToast = toast.loading("Sending your message...");
     
     try {
-      // 1. Save to Database (Capture the lead first)
+      // 1. Direct Supabase Insert into 'contacts' table
       const dbSuccess = await submitContactForm(formData);
       
       if (dbSuccess) {
-        // 2. Trigger Emails (Handled by emailService with fallback/mock mode)
-        const [notifySent, replySent] = await Promise.allSettled([
-          sendLeadNotification(formData),
-          sendAutoReply(formData.email, formData.fullName)
-        ]);
+        // 2. Trigger Emails (Backend or EmailJS fallback)
+        // We run this in the background to ensure fast UX
+        sendLeadNotification(formData).catch(err => console.error("Email triggered failed:", err));
 
         toast.dismiss(loadingToast);
         setIsSuccess(true);
-        toast.success("Thank you! Your message has been received.");
+        toast.success("Message Sent Successfully");
         
         // Reset form
         setFormData({ fullName: '', email: '', phone: '', companyName: '', message: '' });
       } else {
         toast.dismiss(loadingToast);
-        toast.error("Connectivity issue. Please check your internet.");
+        toast.error("Failed to save contact. Please try again.");
       }
     } catch (error) {
-      console.error("Submission crash:", error);
+      console.error("Submission error:", error);
       toast.dismiss(loadingToast);
-      toast.error("Internal server error. Please try again later.");
+      toast.error("Internal server error.");
     } finally {
       setIsSubmitting(false);
     }
@@ -65,12 +63,12 @@ const Contact: React.FC = () => {
             <CheckCircle size={64} />
           </div>
           <div className="space-y-4">
-            <h2 className="text-4xl font-display font-black text-deepBlue dark:text-white">Message Received!</h2>
+            <h2 className="text-4xl font-display font-black text-deepBlue dark:text-white">Message Sent Successfully</h2>
             <p className="text-xl font-bold text-gray-800 dark:text-gray-200">
-              We'll get back to you shortly.
+              Your inquiry is in our database!
             </p>
-            <p className="text-gray-500 dark:text-gray-400">
-              Our engineering team is already reviewing your inquiry. Expect a response at your email address within 24 hours.
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              Thank you for reaching out to ATON TECH Solutions. Our team will review your message and contact you via email shortly.
             </p>
           </div>
           <button 
@@ -90,10 +88,10 @@ const Contact: React.FC = () => {
       <div className="grid lg:grid-cols-2 gap-16">
         <div className="space-y-12">
           <div className="space-y-6">
-            <h2 className="text-4xl font-display font-bold text-deepBlue dark:text-white">Start Your Project</h2>
+            <h2 className="text-4xl font-display font-bold text-deepBlue dark:text-white">Connect with Experts</h2>
             <p className="text-gray-700 dark:text-gray-300 text-lg">
               Partner with ATON TECH Solutions to build your next-generation software. 
-              Fill out the form below and our experts will contact you within 24 hours.
+              Your data is secured and stored directly in our systems.
             </p>
           </div>
 
@@ -188,7 +186,7 @@ const Contact: React.FC = () => {
               disabled={isSubmitting}
               className={`w-full py-5 rounded-2xl bg-orange-gradient text-white font-black text-xl shadow-xl flex items-center justify-center space-x-4 transition-all hover:shadow-orange-500/20 hover:-translate-y-1 active:scale-95 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              <span>{isSubmitting ? 'Processing...' : 'Send Message'}</span>
+              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
               {!isSubmitting && <Send size={22} />}
             </button>
           </form>

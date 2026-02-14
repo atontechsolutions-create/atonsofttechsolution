@@ -1,44 +1,39 @@
 
+import { createClient } from '@supabase/supabase-js';
 import { ContactFormData } from '../types';
 
 /**
- * Supabase Connection Details
+ * Supabase Production Configuration
  */
 const SUPABASE_URL = 'https://dyjtqvhuuuqszocmaozk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_b2SsfZPqClCMhnkfdbniuw_M7yc4lMN';
 
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 /**
- * Submits the contact form data to the Supabase 'leads' table.
+ * Submits the contact form data to the Supabase 'contacts' table.
+ * Specifically maps UI fields to the requested table schema: name, email, message.
  */
 export const submitContactForm = async (data: ContactFormData): Promise<boolean> => {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        full_name: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        company_name: data.companyName,
-        message: data.message,
-        project_name: 'atontechsolutions'
-      })
-    });
+    const { error } = await supabase
+      .from('contacts')
+      .insert([
+        { 
+          name: data.fullName, 
+          email: data.email, 
+          message: data.message 
+        }
+      ]);
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('Submission failed:', error);
+    if (error) {
+      console.error('Supabase Error:', error.message);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Network error during contact submission:', error);
+    console.error('Network error during Supabase submission:', error);
     return false;
   }
 };
@@ -48,18 +43,14 @@ export const submitContactForm = async (data: ContactFormData): Promise<boolean>
  */
 export const fetchAppConfig = async (key: string): Promise<string | null> => {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/app_config?key=eq.${key}&select=value`, {
-      method: 'GET',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      }
-    });
+    const { data, error } = await supabase
+      .from('app_config')
+      .select('value')
+      .eq('key', key)
+      .single();
 
-    if (!response.ok) return null;
-    
-    const data = await response.json();
-    return data.length > 0 ? data[0].value : null;
+    if (error || !data) return null;
+    return data.value;
   } catch (error) {
     console.error(`Error fetching config for ${key}:`, error);
     return null;

@@ -4,10 +4,11 @@ import { fetchAppConfig } from './supabase';
 
 /**
  * ATON TECH Hybrid Email Service
- * Prioritizes Local Node.js Backend -> Falls back to EmailJS (Serverless)
+ * Prioritizes Vercel API -> Falls back to EmailJS (Serverless)
  */
 
-const BACKEND_URL = "http://localhost:5000/send-email";
+// Use relative path for production hosting
+const BACKEND_URL = "/api/send-email";
 
 interface EmailJSConfig {
   serviceId: string;
@@ -42,13 +43,9 @@ const getEmailJSConfig = async (): Promise<EmailJSConfig> => {
   }
 };
 
-/**
- * Main delivery function that attempts Backend first, then EmailJS
- */
 export const sendLeadNotification = async (data: any): Promise<boolean> => {
-  // 1. Attempt Node.js Backend Delivery
+  // 1. Attempt Vercel Backend Delivery
   try {
-    console.log("[Email Service] Attempting Backend delivery...");
     const response = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,20 +53,16 @@ export const sendLeadNotification = async (data: any): Promise<boolean> => {
     });
 
     if (response.ok) {
-      console.log("[Email Service] Backend delivery successful!");
       return true;
     }
   } catch (backendError) {
     console.warn("[Email Service] Backend unavailable, switching to Serverless fallback.");
   }
 
-  // 2. Fallback to EmailJS (Serverless)
+  // 2. Fallback to EmailJS
   try {
     const config = await getEmailJSConfig();
-    if (config.isMock) {
-      console.log("[Email Service][Demo] No backend or EmailJS keys found. Logged lead:", data.fullName);
-      return true;
-    }
+    if (config.isMock) return true;
 
     const templateParams = {
       from_name: data.fullName,
@@ -88,12 +81,6 @@ export const sendLeadNotification = async (data: any): Promise<boolean> => {
   }
 };
 
-/**
- * Auto-reply is now handled by the Backend server natively, 
- * but we keep this for EmailJS fallback compatibility.
- */
 export const sendAutoReply = async (userEmail: string, userName: string): Promise<boolean> => {
-  // If the backend call was successful in sendLeadNotification, 
-  // it already sent the auto-reply, so we return true here.
   return true; 
 };

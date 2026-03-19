@@ -67,7 +67,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li className="flex flex-col">
                 <span className="text-white font-black text-xs uppercase tracking-widest mb-2">Technical Support</span>
-                <a href="https://wa.me/911234567890" target="_blank" className="text-lg font-bold hover:text-green-400 transition-colors">Chat on WhatsApp</a>
+                <a href="https://wa.me/919420841427" target="_blank" className="text-lg font-bold hover:text-green-400 transition-colors">Chat on WhatsApp</a>
               </li>
             </ul>
           </div>

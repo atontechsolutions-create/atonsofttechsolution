@@ -53,6 +53,7 @@ const Services: React.FC = () => {
       title: "Enterprise & Advanced Solutions",
       icon: <BrainCircuit size={32} />,
       items: [
+        "Spring Boot & Java Enterprise Solutions",
         "AI-Based Business Tools",
         "Data Analytics Dashboard",
         "Business Intelligence Systems",

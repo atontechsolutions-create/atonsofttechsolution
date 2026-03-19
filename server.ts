@@ -1,5 +1,5 @@
 
-import express from "express";
+import express, { Request, Response } from "express";
 import nodemailer from "nodemailer";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -15,7 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/send-email", async (req, res) => {
+app.post("/send-email", async (req: Request, res: Response) => {
   const { fullName, email, phone, companyName, message } = req.body;
 
   // Validation

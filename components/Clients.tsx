@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Star } from 'lucide-react';
 
 const StatBox: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="text-center p-8 bg-blue-50 rounded-3xl border border-blue-100 hover:shadow-lg transition-shadow">
@@ -26,9 +27,37 @@ const Clients: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 grayscale hover:grayscale-0 transition-all cursor-pointer border border-gray-100">
-               <div className="text-gray-300 font-display font-bold text-2xl">LOGO {i}</div>
+          {[
+            { name: 'Rajesh Kumar', role: 'CEO, RetailHub', rating: 5, image: 'https://i.pravatar.cc/200?u=rajesh' },
+            { name: 'Priya Sharma', role: 'Founder, EcoStyle', rating: 5, image: 'https://i.pravatar.cc/200?u=priya' },
+            { name: 'Amit Patel', role: 'CTO, DataSync', rating: 4, image: 'https://i.pravatar.cc/200?u=amit' },
+            { name: 'Sneha Reddy', role: 'Director, Innovate', rating: 5, image: 'https://i.pravatar.cc/200?u=sneha' },
+            { name: 'Vikram Singh', role: 'Manager, GlobalOps', rating: 5, image: 'https://i.pravatar.cc/200?u=vikram' },
+            { name: 'Anjali Gupta', role: 'Lead, CreativeCo', rating: 4, image: 'https://i.pravatar.cc/200?u=anjali' },
+          ].map((customer) => (
+            <div key={customer.name} className="bg-white dark:bg-slate-800 rounded-3xl p-6 flex flex-col items-center text-center space-y-4 border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-orange-gradient rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity"></div>
+                <img 
+                  src={customer.image} 
+                  alt={customer.name} 
+                  className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-slate-900 relative z-10"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div>
+                <h4 className="font-bold text-deepBlue dark:text-white text-lg">{customer.name}</h4>
+                <p className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-widest">{customer.role}</p>
+              </div>
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    size={14} 
+                    className={i < customer.rating ? "fill-vibrantOrange text-vibrantOrange" : "text-gray-300 dark:text-slate-600"} 
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>

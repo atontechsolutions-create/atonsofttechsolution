@@ -20,13 +20,21 @@ const About: React.FC = () => {
             About ATON TECH
           </div>
           <h2 className="text-4xl font-display font-bold text-deepBlue dark:text-white">
-            Driving Measurable Growth Through <span className="text-royalBlue">Innovation</span>
+            Our <span className="text-royalBlue">Journey</span>
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-            ATON TECH Solutions is a forward-thinking technology company focused on building scalable digital platforms for modern businesses. We transform business ideas into powerful digital systems using advanced technologies and secure architectures.
-          </p>
+          <div className="space-y-4 text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+            <p>
+              In 2017, three brothers with a strong passion for computers dreamed of building something big in technology. We did not have enough money to buy a computer, so we saved and purchased an assembled one. After some time, it stopped working. Instead of giving up, we used jugad and self-learning to repair it ourselves. That was the moment our real journey started.
+            </p>
+            <p>
+              Slowly, we learned hardware and then moved to software. During college, we started learning coding seriously and joined internships to gain practical experience in building websites and software. In 2020, we also started a tech YouTube channel to share our knowledge.
+            </p>
+            <p>
+              With continuous learning and hard work, today all three of us are software developers. We founded Aton Tech Solutions and have built software for small shops as well as large companies.
+            </p>
+          </div>
           
-          <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-6 pt-4">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-royalBlue flex-shrink-0">
                 <Target size={24} />

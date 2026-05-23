@@ -58,6 +58,40 @@
         .timeline-line {
             background: linear-gradient(to bottom, #1E5EFF, #FF6A00);
         }
+        
+        /* Slow, professional, non-synchronized floating animations */
+        @keyframes float-slow-y {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes float-slow-x {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(12px); }
+        }
+        @keyframes float-slow-diagonal {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-10px, -10px); }
+        }
+        @keyframes float-slow-diagonal-reverse {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, -10px); }
+        }
+
+        .animate-float-slow-y {
+            animation: float-slow-y 4s ease-in-out infinite;
+        }
+        .animate-float-slow-x {
+            animation: float-slow-x 4.5s ease-in-out infinite;
+        }
+        .animate-float-slow-diagonal {
+            animation: float-slow-diagonal 5s ease-in-out infinite;
+        }
+        .animate-float-badge-left {
+            animation: float-slow-y 4.5s ease-in-out infinite;
+        }
+        .animate-float-badge-right {
+            animation: float-slow-diagonal-reverse 5.5s ease-in-out infinite;
+        }
     </style>
 <script type="importmap">
 {

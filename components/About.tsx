@@ -6,23 +6,23 @@ const About: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <div className="relative">
+        <div className="relative mr-4 mb-4 sm:mr-6 sm:mb-6">
           <img 
             src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=800&h=600" 
             alt="ATON TECH Solutions" 
-            className="rounded-3xl shadow-2xl relative z-10"
+            className="rounded-3xl shadow-2xl relative z-10 w-full h-auto max-w-full object-cover"
           />
-          <div className="absolute -bottom-6 -right-6 w-full h-full border-4 border-vibrantOrange rounded-3xl -z-0"></div>
+          <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-full h-full border-4 border-vibrantOrange rounded-3xl -z-0"></div>
         </div>
 
         <div className="space-y-8">
           <div className="inline-block px-4 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-vibrantOrange font-bold text-sm uppercase tracking-wider border border-orange-100 dark:border-orange-900/30">
             About ATON TECH
           </div>
-          <h2 className="text-4xl font-display font-bold text-deepBlue dark:text-white">
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-deepBlue dark:text-white">
             Our <span className="text-royalBlue">Journey</span>
           </h2>
-          <div className="space-y-4 text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+          <div className="space-y-4 text-gray-600 dark:text-gray-400 text-base sm:text-lg leading-relaxed">
             <p>
               In 2017, three brothers with a strong passion for computers dreamed of building something big in technology. We did not have enough money to buy a computer, so we saved and purchased an assembled one. After some time, it stopped working. Instead of giving up, we used jugad and self-learning to repair it ourselves. That was the moment our real journey started.
             </p>
@@ -30,11 +30,11 @@ const About: React.FC = () => {
               Slowly, we learned hardware and then moved to software. During college, we started learning coding seriously and joined internships to gain practical experience in building websites and software. In 2020, we also started a tech YouTube channel to share our knowledge.
             </p>
             <p>
-              With continuous learning and hard work, today all three of us are software developers. We founded Aton Tech Solutions and have built software for small shops as well as large companies.
+              With continuous learning and hard work, today all three of us are software developers. We founded ATON TECH Solutions and have built software for small shops as well as large companies.
             </p>
           </div>
           
-          <div className="grid grid-cols-2 gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-royalBlue flex-shrink-0">
                 <Target size={24} />

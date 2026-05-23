@@ -59,7 +59,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-darkBg text-gray-100' : 'bg-white text-gray-900'}`}>
+    <div className={`relative w-full max-w-full overflow-x-hidden min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-darkBg text-gray-100' : 'bg-white text-gray-900'}`}>
       <Toaster position="top-right" />
       <Navbar 
         isScrolled={isScrolled} 
@@ -73,35 +73,35 @@ const App: React.FC = () => {
           <Hero onNavigate={handleScrollToSection} />
         </section>
         
-        <section id="about" className="py-20 bg-white dark:bg-darkBg">
-          <About />
-        </section>
-        
-        <section id="services" className="py-20 bg-gray-50 dark:bg-slate-900/50">
+        <section id="services" className="pt-12 pb-6 md:pt-20 md:pb-10 bg-gray-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800/30">
           <Services />
         </section>
-        
-        <section id="process" className="py-20 bg-white dark:bg-darkBg">
-          <Process />
-        </section>
-        
-        <section id="technology-stack" className="py-20 bg-gray-50 dark:bg-slate-900/50">
+
+        <section id="technology-stack" className="pt-6 pb-12 md:pt-10 md:pb-20 bg-white dark:bg-darkBg">
           <TechStack />
         </section>
         
-        <section id="our-clients" className="py-20 bg-white dark:bg-darkBg">
+        <section id="process" className="py-12 md:py-20 bg-gray-50 dark:bg-slate-900/50 border-t border-b border-gray-100 dark:border-slate-800/30">
+          <Process />
+        </section>
+        
+        <section id="our-clients" className="py-12 md:py-20 bg-white dark:bg-darkBg">
           <Clients />
         </section>
         
-        <section id="why-choose-us" className="py-20 bg-gray-900 text-white">
+        <section id="why-choose-us" className="py-12 md:py-20 bg-gray-900 text-white">
           <WhyChooseUs />
         </section>
         
-        <section id="testimonials" className="py-20 bg-gray-50 dark:bg-slate-900/50">
+        <section id="testimonials" className="py-12 md:py-20 bg-gray-50 dark:bg-slate-900/50">
           <Testimonials />
         </section>
         
-        <section id="contact-us" className="py-20 bg-white dark:bg-darkBg">
+        <section id="about" className="py-12 md:py-20 bg-white dark:bg-darkBg">
+          <About />
+        </section>
+        
+        <section id="contact-us" className="py-12 md:py-20 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-800/30">
           <Contact />
         </section>
 

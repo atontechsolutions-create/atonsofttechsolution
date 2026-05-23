@@ -65,8 +65,8 @@ const Services: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16 space-y-4">
-        <h2 className="text-4xl md:text-5xl font-display font-bold text-deepBlue dark:text-white">Expertise We Deliver</h2>
+      <div className="text-center mb-8 md:mb-16 space-y-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-deepBlue dark:text-white">Expertise We Deliver</h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
           Specialized solutions tailored for modern enterprises and fast-growing startups.
         </p>

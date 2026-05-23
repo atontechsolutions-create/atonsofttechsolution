@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import Logo from './Logo';
 
@@ -12,16 +12,55 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ isScrolled, isDarkMode, toggleTheme, onNavigate }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('home');
 
   const navLinks = [
     { name: 'Home', id: 'home' },
-    { name: 'About', id: 'about' },
     { name: 'Services', id: 'services' },
-    { name: 'Process', id: 'process' },
     { name: 'Tech', id: 'technology-stack' },
+    { name: 'Process', id: 'process' },
     { name: 'Clients', id: 'our-clients' },
+    { name: 'About', id: 'about' },
     { name: 'Contact', id: 'contact-us' },
   ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window !== 'undefined') {
+        const bottomOffset = 150;
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - bottomOffset) {
+          setActiveSection('contact-us');
+          return;
+        }
+
+        let currentSection = 'home';
+        let minDistance = Infinity;
+
+        for (const link of navLinks) {
+          const el = document.getElementById(link.id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            const offset = 120;
+            if (rect.top <= offset && rect.bottom > offset) {
+              currentSection = link.id;
+              break;
+            }
+            const distance = Math.abs(rect.top - offset);
+            if (distance < minDistance) {
+              minDistance = distance;
+              currentSection = link.id;
+            }
+          }
+        }
+        setActiveSection(currentSection);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -38,16 +77,28 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled, isDarkMode, toggleTheme, on
           </div>
 
           <div className="hidden lg:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <a 
-                key={link.name} 
-                href={`#${link.id}`}
-                onClick={(e) => handleClick(e, link.id)}
-                className={`font-bold text-[13px] uppercase tracking-[0.15em] transition-all hover:text-vibrantOrange ${isScrolled ? 'text-gray-800 dark:text-gray-100' : 'text-white'}`}
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a 
+                  key={link.name} 
+                  href={`#${link.id}`}
+                  onClick={(e) => handleClick(e, link.id)}
+                  className={`font-bold text-[13px] uppercase tracking-[0.15em] transition-all relative pb-1 ${
+                    isActive 
+                      ? 'text-vibrantOrange font-extrabold' 
+                      : isScrolled 
+                        ? 'text-gray-800 dark:text-gray-100 hover:text-vibrantOrange' 
+                        : 'text-white hover:text-vibrantOrange'
+                  }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <span className="absolute bottom-[-4px] left-0 right-0 h-[2px] bg-vibrantOrange rounded-full" />
+                  )}
+                </a>
+              );
+            })}
             
             <button 
               onClick={toggleTheme}
@@ -82,23 +133,30 @@ const Navbar: React.FC<NavbarProps> = ({ isScrolled, isDarkMode, toggleTheme, on
         </div>
       </div>
 
-      <div className={`lg:hidden transition-all duration-500 overflow-hidden ${mobileMenuOpen ? 'max-h-screen bg-white dark:bg-slate-900 opacity-100 border-b dark:border-slate-800' : 'max-h-0 opacity-0'}`}>
-        <div className="px-6 py-10 space-y-6 flex flex-col items-center">
-          {navLinks.map((link) => (
-            <a 
-              key={link.name} 
-              href={`#${link.id}`} 
-              onClick={(e) => handleClick(e, link.id)}
-              className="block text-gray-900 dark:text-white font-black text-2xl uppercase tracking-tighter hover:text-vibrantOrange transition-colors"
-            >
-              {link.name}
-            </a>
-          ))}
+      <div className={`lg:hidden transition-all duration-500 overflow-hidden ${mobileMenuOpen ? 'max-h-[450px] bg-white dark:bg-slate-900 opacity-100 border-b dark:border-slate-800' : 'max-h-0 opacity-0'}`}>
+        <div className="px-6 py-6 space-y-4 flex flex-col items-center">
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <a 
+                key={link.name} 
+                href={`#${link.id}`} 
+                onClick={(e) => handleClick(e, link.id)}
+                className={`block font-bold text-base uppercase tracking-wider transition-colors ${
+                  isActive 
+                    ? 'text-vibrantOrange' 
+                    : 'text-gray-900 dark:text-white hover:text-vibrantOrange'
+                }`}
+              >
+                {link.name}
+              </a>
+            );
+          })}
           <button 
             onClick={(e) => handleClick(e, 'contact-us')}
-            className="w-full text-center bg-orange-gradient text-white py-5 rounded-2xl font-black text-xl shadow-xl active:scale-95 transition-transform"
+            className="w-full max-w-sm text-center bg-orange-gradient text-white py-3 rounded-xl font-bold text-sm uppercase tracking-wider shadow-md active:scale-95 transition-all"
           >
-            FREE CONSULTATION
+            Free Consultation
           </button>
         </div>
       </div>

@@ -74,8 +74,8 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 text-gray-500 font-bold text-sm tracking-wide">
-          <p>© 2026 ATON TECH Solutions. All Rights Reserved.</p>
-          <div className="flex space-x-10">
+          <p className="whitespace-nowrap text-[11px] [@media(min-width:375px)]:text-xs sm:text-sm">© 2026 ATON TECH Solutions. All Rights Reserved.</p>
+          <div className="flex space-x-6 sm:space-x-10 text-xs sm:text-sm">
             <a href="#" className="hover:text-white transition-colors">Privacy Shield</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Operations</a>
           </div>

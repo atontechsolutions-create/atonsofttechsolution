@@ -85,52 +85,55 @@ const Contact: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="grid lg:grid-cols-2 gap-16">
-        <div className="space-y-12">
-          <div className="space-y-6">
-            <h2 className="text-4xl font-display font-bold text-deepBlue dark:text-white">Connect with Experts</h2>
-            <p className="text-gray-700 dark:text-gray-300 text-lg">
+      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+        <div className="space-y-8 sm:space-y-12">
+          <div className="space-y-4 sm:space-y-6">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-deepBlue dark:text-white">Connect with Experts</h2>
+            <p className="text-gray-700 dark:text-gray-300 text-base sm:text-lg">
               Partner with ATON TECH Solutions to build your next-generation software. 
               Your data is secured and stored directly in our systems.
             </p>
           </div>
 
-          <div className="space-y-8">
-            <div className="flex items-center space-x-6">
-              <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 text-royalBlue flex items-center justify-center flex-shrink-0 shadow-inner">
-                <Mail size={24} />
+          <div className="space-y-6 sm:space-y-8">
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 text-royalBlue flex items-center justify-center flex-shrink-0 shadow-inner">
+                <Mail size={22} className="sm:hidden" />
+                <Mail size={24} className="hidden sm:block" />
               </div>
-              <div>
-                <p className="text-gray-900 dark:text-gray-100 font-black text-sm uppercase tracking-widest mb-1">Direct Email</p>
-                <a href="mailto:atontechsolutions@gmail.com" className="text-xl font-bold text-deepBlue dark:text-royalBlue hover:underline transition-all">
+              <div className="min-w-0">
+                <p className="text-gray-900 dark:text-gray-100 font-black text-xs uppercase tracking-widest mb-1">Direct Email</p>
+                <a href="mailto:atontechsolutions@gmail.com" className="text-base sm:text-xl font-bold text-deepBlue dark:text-royalBlue hover:underline transition-all break-all sm:break-normal">
                   atontechsolutions@gmail.com
                 </a>
               </div>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <div className="w-14 h-14 rounded-full bg-orange-50 dark:bg-orange-900/30 text-vibrantOrange flex items-center justify-center flex-shrink-0 shadow-inner">
-                <Phone size={24} />
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 dark:bg-orange-900/30 text-vibrantOrange flex items-center justify-center flex-shrink-0 shadow-inner">
+                <Phone size={22} className="sm:hidden" />
+                <Phone size={24} className="hidden sm:block" />
               </div>
               <div>
-                <p className="text-gray-900 dark:text-gray-100 font-black text-sm uppercase tracking-widest mb-1">Contact Line</p>
-                <p className="text-xl font-bold text-deepBlue dark:text-white">+91 94208 41427</p>
+                <p className="text-gray-900 dark:text-gray-100 font-black text-xs uppercase tracking-widest mb-1">Contact Line</p>
+                <p className="text-lg sm:text-xl font-bold text-deepBlue dark:text-white">+91 94208 41427</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 flex items-center justify-center flex-shrink-0">
-                <MapPin size={24} />
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 flex items-center justify-center flex-shrink-0">
+                <MapPin size={22} className="sm:hidden" />
+                <MapPin size={24} className="hidden sm:block" />
               </div>
               <div>
-                <p className="text-gray-900 dark:text-gray-100 font-black text-sm uppercase tracking-widest mb-1">Headquarters</p>
-                <p className="text-xl font-bold text-deepBlue dark:text-white">Pune, Maharashtra</p>
+                <p className="text-gray-900 dark:text-gray-100 font-black text-xs uppercase tracking-widest mb-1">Headquarters</p>
+                <p className="text-lg sm:text-xl font-bold text-deepBlue dark:text-white">Pune, Maharashtra</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-royalBlue/5 rounded-full -mr-16 -mt-16"></div>
           
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">

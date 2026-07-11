@@ -4,7 +4,7 @@ import React from 'react';
 const Logo: React.FC<{ size?: number; showText?: boolean; inverted?: boolean }> = ({ size = 48, showText = true, inverted = false }) => {
   return (
     <div className="flex items-center space-x-3 group cursor-pointer">
-      <div className="relative overflow-hidden rounded-xl" style={{ width: size, height: size }}>
+      <div className="relative overflow-hidden rounded-xl flex-shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
           <defs>
             <linearGradient id="logoBlue" x1="0%" y1="0%" x2="100%" y2="100%">

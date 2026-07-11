@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="logoBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="40%" stop-color="#0066FF" />
+      <stop offset="100%" stop-color="#001C55" />
+    </linearGradient>
+    <linearGradient id="logoOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF000" />
+      <stop offset="40%" stop-color="#FF6A00" />
+      <stop offset="100%" stop-color="#801000" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <!-- Background is transparent so it fits perfectly on any container -->
+  
+  <!-- Icon Group scaled and centered -->
+  <g transform="translate(100, 20) scale(3)">
+    <!-- Left Blue Curved Wing -->
+    <path d="M 44 32 C 44 32, 43 50, 31 63 C 31 63, 40 76, 45 83 C 45 83, 22 88, 8 92 C 18 70, 32 46, 44 32 Z" fill="url(#logoBlue)" />
+
+    <!-- Right Orange Curved Wing -->
+    <path d="M 56 32 C 56 32, 57 50, 69 63 C 69 63, 60 76, 55 83 C 55 83, 78 88, 92 92 C 82 70, 68 46, 56 32 Z" fill="url(#logoOrange)" />
+
+    <!-- Circuit Lines rising from the top -->
+    <path d="M 41 38 L 41 22" stroke="#0066FF" stroke-width="1.8" stroke-linecap="round" />
+    <path d="M 47 34 L 47 10" stroke="#00D2FF" stroke-width="1.8" stroke-linecap="round" />
+    <path d="M 53 34 L 53 14" stroke="#FF6A00" stroke-width="1.8" stroke-linecap="round" />
+    <path d="M 59 38 L 59 26" stroke="#FF8C00" stroke-width="1.8" stroke-linecap="round" />
+
+    <!-- Hollow Circuit Rings -->
+    <circle cx="41" cy="22" r="2.5" fill="white" stroke="#0066FF" stroke-width="1.8" />
+    <circle cx="47" cy="10" r="2.5" fill="white" stroke="#00D2FF" stroke-width="1.8" />
+    <circle cx="53" cy="14" r="2.5" fill="white" stroke="#FF6A00" stroke-width="1.8" />
+    <circle cx="59" cy="26" r="2.5" fill="white" stroke="#FF8C00" stroke-width="1.8" />
+
+    <!-- Central Floating Diamond -->
+    <rect x="36" y="48" width="28" height="28" rx="4" transform="rotate(45 50 62)" fill="white" filter="url(#shadow)" />
+
+    <!-- Code Symbol (</>) inside Diamond -->
+    <path d="M 43.5 57.5 L 39 62 L 43.5 66.5" stroke="#0A2E5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M 48 67 L 52 57" stroke="#0A2E5C" stroke-width="2.2" stroke-linecap="round" fill="none" />
+    <path d="M 56.5 57.5 L 61 62 L 56.5 66.5" stroke="#0A2E5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  </g>
+
+  <!-- Typography -->
+  <g font-family="'Poppins', 'Inter', 'Segoe UI', sans-serif">
+    <!-- ATON TECH -->
+    <text x="250" y="385" text-anchor="middle" font-size="48" font-weight="900" letter-spacing="-1">
+      <tspan fill="#0A3D62">ATON</tspan>
+      <tspan fill="url(#logoOrange)"> TECH</tspan>
+    </text>
+
+    <!-- SOLUTIONS -->
+    <text x="254" y="425" text-anchor="middle" font-size="20" font-weight="700" letter-spacing="11" fill="#0A3D62" opacity="0.9">SOLUTIONS</text>
+  </g>
+</svg>

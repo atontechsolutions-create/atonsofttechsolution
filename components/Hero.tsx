@@ -131,34 +131,12 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               {/* Central Premium Card */}
               <div className="glass-card p-4 rounded-[40px] shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-700 bg-white/5 backdrop-blur-xl border border-white/20">
                 <div className="bg-white rounded-[32px] p-6 sm:p-12 shadow-inner overflow-hidden aspect-square flex items-center justify-center">
-                  <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 relative overflow-hidden rounded-3xl group-hover:scale-105 transition-transform duration-500">
-                      <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl">
-                        <defs>
-                          <linearGradient id="heroLogoBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#0A3D62" />
-                            <stop offset="100%" stopColor="#1E5EFF" />
-                          </linearGradient>
-                          <linearGradient id="heroLogoOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#FF6A00" />
-                            <stop offset="100%" stopColor="#FFA502" />
-                          </linearGradient>
-                        </defs>
-                        <path d="M50 10 L15 85 L50 85 Z" fill="url(#heroLogoBlue)" />
-                        <path d="M50 10 L85 85 L50 85 Z" fill="url(#heroLogoOrange)" />
-                        <rect x="35" y="45" width="30" height="30" transform="rotate(45 50 60)" fill="white" />
-                        <text x="50" y="66" fontSize="16" fontWeight="900" fill="#0A3D62" textAnchor="middle" fontFamily="monospace">{"</>"}</text>
-                        <circle cx="50" cy="5" r="3" fill="#1E5EFF" />
-                        <line x1="50" y1="5" x2="50" y2="12" stroke="#1E5EFF" strokeWidth="2" />
-                        <circle cx="42" cy="12" r="2.5" fill="#0A3D62" />
-                        <circle cx="58" cy="12" r="2.5" fill="#FF6A00" />
-                      </svg>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-display font-black text-3xl sm:text-4xl text-deepBlue">ATON <span className="text-vibrantOrange">TECH</span></div>
-                      <div className="text-[10px] sm:text-xs font-bold text-gray-400 tracking-[0.3em]">SOLUTIONS</div>
-                    </div>
-                  </div>
+                  <img 
+                    src="/logo-full.svg" 
+                    alt="ATON TECH Solutions Logo" 
+                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
               </div>
               

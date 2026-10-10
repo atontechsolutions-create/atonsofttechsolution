@@ -4,12 +4,22 @@ import Logo from './Logo';
 
 interface FooterProps {
   onNavigate: (id: string) => void;
+  onNavigateRoute?: (path: string) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+const Footer: React.FC<FooterProps> = ({ onNavigate, onNavigateRoute }) => {
   const handleClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     onNavigate(id);
+  };
+
+  const handleRouteClick = (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    if (onNavigateRoute) {
+      onNavigateRoute(path);
+    } else {
+      window.location.href = path;
+    }
   };
 
   return (
@@ -42,6 +52,33 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li><button onClick={(e) => handleClick(e, 'home')} className="hover:text-white transition-colors">Home</button></li>
               <li><button onClick={(e) => handleClick(e, 'about')} className="hover:text-white transition-colors">About Us</button></li>
               <li><button onClick={(e) => handleClick(e, 'services')} className="hover:text-white transition-colors">Services</button></li>
+              <li>
+                <button 
+                  onClick={(e) => handleRouteClick(e, '/tools')} 
+                  className="hover:text-vibrantOrange transition-colors flex items-center gap-2"
+                >
+                  <span>Free Tools Directory</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-vibrantOrange text-white font-black tracking-normal">
+                    FREE
+                  </span>
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={(e) => handleRouteClick(e, '/tools/signature-resizer')} 
+                  className="hover:text-vibrantOrange transition-colors text-xs text-gray-500 pl-2"
+                >
+                  → Signature Resizer
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={(e) => handleRouteClick(e, '/tools/image-compressor')} 
+                  className="hover:text-vibrantOrange transition-colors text-xs text-gray-500 pl-2"
+                >
+                  → Image Compressor
+                </button>
+              </li>
               <li><button onClick={(e) => handleClick(e, 'technology-stack')} className="hover:text-white transition-colors">Stack</button></li>
               <li><button onClick={(e) => handleClick(e, 'contact-us')} className="hover:text-white transition-colors">Get in Touch</button></li>
             </ul>

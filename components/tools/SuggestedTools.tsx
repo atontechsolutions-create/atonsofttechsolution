@@ -15,6 +15,7 @@ interface SuggestedToolsProps {
   currentToolId: string;
   currentCategory?: string;
   onNavigateToTool?: (path: string) => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const ALL_TOOLS: ToolSuggestion[] = [
@@ -56,12 +57,17 @@ export const ALL_TOOLS: ToolSuggestion[] = [
   },
 ];
 
-const SuggestedTools: React.FC<SuggestedToolsProps> = ({ currentToolId, onNavigateToTool }) => {
+const SuggestedTools: React.FC<SuggestedToolsProps> = ({
+  currentToolId,
+  onNavigateToTool,
+  onNavigate,
+}) => {
   const suggestions = ALL_TOOLS.filter((tool) => tool.id !== currentToolId);
 
   const handleNav = (path: string) => {
-    if (onNavigateToTool) {
-      onNavigateToTool(path);
+    const navFn = onNavigateToTool || onNavigate;
+    if (navFn) {
+      navFn(path);
     } else if (typeof window !== 'undefined') {
       window.location.pathname = path;
     }

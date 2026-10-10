@@ -11,14 +11,32 @@ import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
-import PhotoSignatureResizer from './components/tools/PhotoSignatureResizer';
+import PhotoResizer from './components/tools/PhotoResizer';
 import SignatureResizer from './components/tools/SignatureResizer';
+import PhotoSignatureResizer from './components/tools/PhotoSignatureResizer';
+import PassportPhotoMaker from './components/tools/PassportPhotoMaker';
+import IndianExamResizer from './components/tools/IndianExamResizer';
+import PhotoCompressorKb from './components/tools/PhotoCompressorKb';
+import SignatureCompressorTargetKb from './components/tools/SignatureCompressorTargetKb';
+import PhotoBackgroundChanger from './components/tools/PhotoBackgroundChanger';
+import SignatureBackgroundRemover from './components/tools/SignatureBackgroundRemover';
+import OnlineSignatureMaker from './components/tools/OnlineSignatureMaker';
+import WhiteBackgroundMaker from './components/tools/WhiteBackgroundMaker';
+import ImageCropper from './components/tools/ImageCropper';
+import ImageRotator from './components/tools/ImageRotator';
+import ImageBrightnessContrast from './components/tools/ImageBrightnessContrast';
+import MultiplePassportPhotosPage from './components/tools/MultiplePassportPhotosPage';
+import PhotoSignatureFormatConverter from './components/tools/PhotoSignatureFormatConverter';
+import ImageDpiChecker from './components/tools/ImageDpiChecker';
+import ImageDimensionsChecker from './components/tools/ImageDimensionsChecker';
 import ImageCompressor from './components/tools/ImageCompressor';
 import ImageConverter from './components/tools/ImageConverter';
 import ToolsIndex from './components/tools/ToolsIndex';
 import MicrophoneTester from './components/tools/MicrophoneTester';
 import CameraTester from './components/tools/CameraTester';
 import ImageToPdfConverter from './components/tools/ImageToPdfConverter';
+import PdfToolWorkspace from './components/tools/PdfToolWorkspace';
+import { getPdfToolBySlug } from './components/tools/pdfToolsData';
 import QrCodeGenerator from './components/tools/QrCodeGenerator';
 import InternetSpeedTest from './components/tools/InternetSpeedTest';
 import WordCounter from './components/tools/WordCounter';
@@ -120,17 +138,66 @@ const App: React.FC = () => {
 
   // Route matches
   const normalizedPath = currentPath.replace(/\/+$/, '') || '/';
+  // Section A: Photo & Signature Tools (Independent routes)
+  const isPhotoResizer = normalizedPath === '/tools/photo-resizer';
   const isSignatureResizer = normalizedPath === '/tools/signature-resizer';
-  const isImageCompressor = normalizedPath === '/tools/image-compressor';
-  const isImageConverter = normalizedPath === '/tools/image-converter';
   const isPhotoSignatureResizer =
-    normalizedPath === '/tools/photo-signature-resizer' || normalizedPath === '/tools/photo-resizer';
+    normalizedPath === '/tools/photo-signature-resizer' ||
+    normalizedPath === '/tools/photo-and-signature-resizer';
+  const isPassportMaker = normalizedPath === '/tools/passport-photo-maker';
+  const isIndianExamResizer = normalizedPath === '/tools/indian-exam-resizer';
+  const isPhotoCompressor20Kb = normalizedPath === '/tools/photo-compressor-20kb';
+  const isPhotoCompressor50Kb = normalizedPath === '/tools/photo-compressor-50kb';
+  const isPhotoCompressor100Kb = normalizedPath === '/tools/photo-compressor-100kb';
+  const isSignatureCompressor =
+    normalizedPath === '/tools/signature-compressor' ||
+    normalizedPath === '/tools/signature-compressor-target-kb';
+  const isPhotoBgChanger =
+    normalizedPath === '/tools/photo-background-changer' ||
+    normalizedPath === '/tools/photo-bg-changer';
+  const isWhiteBgMaker = normalizedPath === '/tools/white-background-maker';
+  const isImageCropper = normalizedPath === '/tools/image-cropper';
+  const isImageRotator = normalizedPath === '/tools/image-rotator';
+  const isImageBrightness =
+    normalizedPath === '/tools/image-brightness-adjuster' ||
+    normalizedPath === '/tools/image-brightness-contrast';
+  const isMultiplePassportPhotos = normalizedPath === '/tools/multiple-passport-photos-page';
+  const isPhotoSigFormatConverter = normalizedPath === '/tools/photo-signature-format-converter';
+  const isImageDpiChecker = normalizedPath === '/tools/image-dpi-checker';
+  const isImageDimensionsChecker = normalizedPath === '/tools/image-dimensions-checker';
+
+  // Section B: Image Tools
+  const isImageCompressor = normalizedPath === '/tools/image-compressor';
+  
+  // PDF Suite Tools (Convert & Organize 45 tools)
+  const currentSlugWithoutTools = normalizedPath.startsWith('/tools/')
+    ? normalizedPath.replace('/tools/', '')
+    : '';
+
+  // Specific Image-to-PDF tools: Dedicated independent converter
+  const isImageToPdf =
+    normalizedPath === '/tools/image-to-pdf' ||
+    normalizedPath === '/tools/jpg-to-pdf' ||
+    normalizedPath === '/tools/png-to-pdf' ||
+    normalizedPath === '/tools/webp-to-pdf' ||
+    normalizedPath === '/tools/heic-to-pdf';
+
+  const matchedPdfTool = !isImageToPdf ? getPdfToolBySlug(currentSlugWithoutTools) : undefined;
+  const isPdfTool = Boolean(matchedPdfTool);
+
+  const isImageConverter =
+    !isPdfTool &&
+    !isImageToPdf &&
+    (normalizedPath === '/tools/image-converter' ||
+      /^\/tools\/[a-z0-9]+-to-[a-z0-9]+$/.test(normalizedPath));
+  const converterSlug = isImageConverter
+    ? normalizedPath.replace('/tools/', '')
+    : 'image-converter';
   const isToolsIndex = normalizedPath === '/tools';
 
   // Newly implemented tools routes
   const isMicTester = normalizedPath === '/tools/mic-tester';
   const isCameraTester = normalizedPath === '/tools/webcam-tester';
-  const isImageToPdf = normalizedPath === '/tools/image-to-pdf';
   const isQrCode = normalizedPath === '/tools/qr-code-generator';
   const isSpeedTest = normalizedPath === '/tools/internet-speed-test';
   const isWordCounter = normalizedPath === '/tools/word-counter';
@@ -141,6 +208,12 @@ const App: React.FC = () => {
   const isDeadPixel = normalizedPath === '/tools/dead-pixel-test';
   const isIpChecker = normalizedPath === '/tools/ip-checker';
   const isRemoveDupes = normalizedPath === '/tools/remove-duplicate-lines';
+  const isSignatureBgRemover =
+    normalizedPath === '/tools/signature-background-remover' ||
+    normalizedPath === '/tools/signature-bg-remover';
+  const isSignatureMaker =
+    normalizedPath === '/tools/online-signature-maker' ||
+    normalizedPath === '/tools/signature-maker';
 
   return (
     <div
@@ -158,9 +231,148 @@ const App: React.FC = () => {
         onNavigateRoute={navigateToRoute}
       />
 
-      {isSignatureResizer ? (
+      {isPhotoResizer ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoResizer
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isSignatureResizer ? (
         <main className="pt-24 sm:pt-28">
           <SignatureResizer
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoSignatureResizer ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoSignatureResizer
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPassportMaker ? (
+        <main className="pt-24 sm:pt-28">
+          <PassportPhotoMaker
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isIndianExamResizer ? (
+        <main className="pt-24 sm:pt-28">
+          <IndianExamResizer
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoCompressor20Kb ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoCompressorKb
+            targetKbDefault={20}
+            titleOverride="Photo Compressor to 20 KB"
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoCompressor50Kb ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoCompressorKb
+            targetKbDefault={50}
+            titleOverride="Photo Compressor to 50 KB"
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoCompressor100Kb ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoCompressorKb
+            targetKbDefault={100}
+            titleOverride="Photo Compressor to 100 KB"
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isSignatureCompressor ? (
+        <main className="pt-24 sm:pt-28">
+          <SignatureCompressorTargetKb
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoBgChanger ? (
+        <main className="pt-24 sm:pt-28" key="photo-bg-changer">
+          <PhotoBackgroundChanger
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isSignatureBgRemover ? (
+        <main className="pt-24 sm:pt-28" key="signature-bg-remover">
+          <SignatureBackgroundRemover
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isSignatureMaker ? (
+        <main className="pt-24 sm:pt-28" key="online-signature-maker">
+          <OnlineSignatureMaker
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isWhiteBgMaker ? (
+        <main className="pt-24 sm:pt-28">
+          <WhiteBackgroundMaker
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isImageCropper ? (
+        <main className="pt-24 sm:pt-28">
+          <ImageCropper
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isImageRotator ? (
+        <main className="pt-24 sm:pt-28">
+          <ImageRotator
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isImageBrightness ? (
+        <main className="pt-24 sm:pt-28">
+          <ImageBrightnessContrast
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isMultiplePassportPhotos ? (
+        <main className="pt-24 sm:pt-28">
+          <MultiplePassportPhotosPage
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isPhotoSigFormatConverter ? (
+        <main className="pt-24 sm:pt-28">
+          <PhotoSignatureFormatConverter
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isImageDpiChecker ? (
+        <main className="pt-24 sm:pt-28">
+          <ImageDpiChecker
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isImageDimensionsChecker ? (
+        <main className="pt-24 sm:pt-28">
+          <ImageDimensionsChecker
             onNavigateHome={handleScrollToSection}
             onNavigateToTool={navigateToRoute}
           />
@@ -177,13 +389,7 @@ const App: React.FC = () => {
           <ImageConverter
             onNavigateHome={handleScrollToSection}
             onNavigateToTool={navigateToRoute}
-          />
-        </main>
-      ) : isPhotoSignatureResizer ? (
-        <main className="pt-24 sm:pt-28">
-          <PhotoSignatureResizer
-            onNavigateHome={handleScrollToSection}
-            onNavigateToTool={navigateToRoute}
+            activeSlug={converterSlug}
           />
         </main>
       ) : isMicTester ? (
@@ -200,8 +406,16 @@ const App: React.FC = () => {
             onNavigateToTool={navigateToRoute}
           />
         </main>
+      ) : isPdfTool ? (
+        <main className="pt-24 sm:pt-28" key={`pdf-tool-${currentSlugWithoutTools}`}>
+          <PdfToolWorkspace
+            toolSlug={currentSlugWithoutTools}
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
       ) : isImageToPdf ? (
-        <main className="pt-24 sm:pt-28">
+        <main className="pt-24 sm:pt-28" key={`image-to-pdf-${normalizedPath}`}>
           <ImageToPdfConverter
             onNavigateHome={handleScrollToSection}
             onNavigateToTool={navigateToRoute}

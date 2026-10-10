@@ -30,6 +30,11 @@ import {
   Type,
   Shield,
   FileCheck,
+  Code,
+  Palette,
+  Grid,
+  RotateCw,
+  Sun,
 } from 'lucide-react';
 import AdSenseUnit from './AdSenseUnit';
 import { ALL_TOOLS_CATALOG, TOOL_CATEGORIES, ToolCategory, ToolItem } from './toolsData';
@@ -93,6 +98,16 @@ const renderIcon = (iconName: string, className = 'w-6 h-6 text-vibrantOrange') 
       return <Type className={className} />;
     case 'Shield':
       return <Shield className={className} />;
+    case 'Code':
+      return <Code className={className} />;
+    case 'Palette':
+      return <Palette className={className} />;
+    case 'Grid':
+      return <Grid className={className} />;
+    case 'RotateCw':
+      return <RotateCw className={className} />;
+    case 'Sun':
+      return <Sun className={className} />;
     default:
       return <Sparkles className={className} />;
   }
@@ -125,11 +140,14 @@ const ToolsIndex: React.FC<ToolsIndexProps> = ({ onNavigateToTool, onNavigateHom
 
   const filteredTools = ALL_TOOLS_CATALOG.filter((tool) => {
     const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return matchesCategory;
     const matchesSearch =
-      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.features.some((f) => f.toLowerCase().includes(searchQuery.toLowerCase()));
+      tool.name.toLowerCase().includes(q) ||
+      tool.description.toLowerCase().includes(q) ||
+      tool.category.toLowerCase().includes(q) ||
+      tool.features.some((f) => f.toLowerCase().includes(q)) ||
+      Boolean(tool.keywords && tool.keywords.some((k) => k.toLowerCase().includes(q) || q.includes(k.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
@@ -187,7 +205,7 @@ const ToolsIndex: React.FC<ToolsIndexProps> = ({ onNavigateToTool, onNavigateHom
               <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search tools (e.g., signature 140x60, 20kb, webcam test, pdf, case converter)..."
+                placeholder="Search tools (e.g., image to jpg, jpg to png, 20kb, signature 140x60, passport photo, webp)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-vibrantOrange transition-all"
@@ -200,6 +218,36 @@ const ToolsIndex: React.FC<ToolsIndexProps> = ({ onNavigateToTool, onNavigateHom
                   Clear
                 </button>
               )}
+            </div>
+
+            {/* Quick Popular Search Tags */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-xs">
+              <span className="font-bold text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                <Sparkles size={13} className="text-vibrantOrange" /> Popular:
+              </span>
+              {[
+                'JPG to PNG',
+                'PNG to JPG',
+                'Image to JPG',
+                'Passport Photo',
+                'Photo to 20KB',
+                'Signature Resizer',
+                'White Background',
+                'Image to PDF',
+                'DPI Checker',
+              ].map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setSearchQuery(term)}
+                  className={`px-2.5 py-1 rounded-full font-medium transition-all border ${
+                    searchQuery.toLowerCase() === term.toLowerCase()
+                      ? 'bg-vibrantOrange text-white border-vibrantOrange shadow-sm'
+                      : 'bg-gray-100 hover:bg-orange-50 dark:bg-slate-800 dark:hover:bg-orange-950/40 text-gray-700 hover:text-vibrantOrange dark:text-gray-300 dark:hover:text-orange-400 border-gray-200 dark:border-slate-700 hover:border-orange-200'
+                  }`}
+                >
+                  {term}
+                </button>
+              ))}
             </div>
 
             {/* Category tabs */}

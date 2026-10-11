@@ -1,4 +1,1 @@
-# Google AdSense Authorized Digital Sellers (ads.txt)
-# Official publisher ID for ATON TECH Solutions
 google.com, pub-6257342305698628, DIRECT, f08c47fec0942fa0
-

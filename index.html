@@ -11,26 +11,9 @@
 
       gtag('config', 'G-DXP22T5WE7');
     </script>
-    <!-- Google AdSense Auto Ads (Publisher: pub-6257342305698628) -->
-    <script>
-      (function() {
-        try {
-          var isDevHost = window.location.hostname === 'localhost' || 
-                          window.location.hostname === '127.0.0.1' || 
-                          window.location.hostname.indexOf('run.app') !== -1 ||
-                          window.location.hostname.indexOf('.local') !== -1;
-          var isDevBlocked = localStorage.getItem('adsense_developer_block') === 'true' || 
-                             new URLSearchParams(window.location.search).get('dev_ads') === 'off';
-          if (!isDevHost && !isDevBlocked) {
-            var adsScript = document.createElement('script');
-            adsScript.async = true;
-            adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6257342305698628";
-            adsScript.crossOrigin = "anonymous";
-            document.head.appendChild(adsScript);
-          }
-        } catch(e) {}
-      })();
-    </script>
+    <!-- Google AdSense Account Verification & Auto Ads (Publisher: pub-6257342305698628) -->
+    <meta name="google-adsense-account" content="ca-pub-6257342305698628">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6257342305698628" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="YSInrdnclgK9UrOWtApGTRjk42XiqZFm1h_u6_E6NUk" />

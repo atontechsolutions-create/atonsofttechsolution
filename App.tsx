@@ -48,6 +48,8 @@ import DeadPixelTester from './components/tools/DeadPixelTester';
 import KeyboardTester from './components/tools/KeyboardTester';
 import IpChecker from './components/tools/IpChecker';
 import RemoveDuplicates from './components/tools/RemoveDuplicates';
+import SEOHead from './components/SEOHead';
+import ToolSeoSection from './components/tools/ToolSeoSection';
 import { Toaster } from 'react-hot-toast';
 
 const App: React.FC = () => {
@@ -223,6 +225,7 @@ const App: React.FC = () => {
         isDarkMode ? 'bg-darkBg text-gray-100' : 'bg-white text-gray-900'
       }`}
     >
+      <SEOHead currentPath={currentPath} />
       <Toaster position="top-right" />
       <Navbar
         isScrolled={isScrolled || currentPath !== '/'}
@@ -581,6 +584,12 @@ const App: React.FC = () => {
             </div>
           </section>
         </main>
+      )}
+
+      {currentPath !== '/' && currentPath !== '/tools/privacy' && currentPath !== '/tools/terms' && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <ToolSeoSection currentPath={currentPath} />
+        </div>
       )}
 
       <Footer onNavigate={handleScrollToSection} onNavigateRoute={navigateToRoute} />

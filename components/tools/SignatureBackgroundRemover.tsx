@@ -60,9 +60,31 @@ const SignatureBackgroundRemover: React.FC<SignatureBackgroundRemoverProps> = ({
   const [processedSizeKb, setProcessedSizeKb] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [showOriginal, setShowOriginal] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files?.[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
 
   const handleFileUpload = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -259,12 +281,14 @@ const SignatureBackgroundRemover: React.FC<SignatureBackgroundRemoverProps> = ({
             />
             <div
               onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (e.dataTransfer.files?.[0]) handleFileUpload(e.dataTransfer.files[0]);
-              }}
-              className="border-2 border-dashed border-gray-300 dark:border-slate-700 hover:border-emerald-500 rounded-3xl p-10 sm:p-16 cursor-pointer transition-all bg-gray-50/60 dark:bg-slate-800/40 hover:bg-emerald-50/40 group flex flex-col items-center justify-center"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-3xl p-10 sm:p-16 cursor-pointer transition-all group flex flex-col items-center justify-center ${
+                isDragging
+                  ? 'border-emerald-600 bg-emerald-50/80 dark:bg-emerald-950/40 ring-4 ring-emerald-500/20 scale-[0.99]'
+                  : 'border-gray-300 dark:border-slate-700 hover:border-emerald-500 bg-gray-50/60 dark:bg-slate-800/40 hover:bg-emerald-50/40'
+              }`}
             >
               <div className="w-20 h-20 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-inner">
                 <PenTool size={36} />
@@ -463,7 +487,14 @@ const SignatureBackgroundRemover: React.FC<SignatureBackgroundRemoverProps> = ({
 
               {/* Canvas Preview Area */}
               <div
-                className={`relative w-full min-h-[300px] sm:min-h-[380px] rounded-3xl border-2 border-gray-200 dark:border-slate-700 flex items-center justify-center p-6 overflow-hidden transition-all ${
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative w-full min-h-[300px] sm:min-h-[380px] rounded-3xl border-2 transition-all flex items-center justify-center p-6 overflow-hidden ${
+                  isDragging
+                    ? 'border-emerald-600 ring-4 ring-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/30'
+                    : 'border-gray-200 dark:border-slate-700'
+                } ${
                   bgMode === 'transparent'
                     ? 'bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] bg-slate-100/70 dark:bg-slate-900/90'
                     : 'bg-white shadow-inner'

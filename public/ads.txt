@@ -1,4 +1,4 @@
 # Google AdSense Authorized Digital Sellers (ads.txt)
-# Replace 'pub-0000000000000000' with your actual Google AdSense Publisher ID (without 'ca-')
-# Example: google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0
-google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+# Official publisher ID for ATON TECH Solutions
+google.com, pub-6257342305698628, DIRECT, f08c47fec0942fa0
+

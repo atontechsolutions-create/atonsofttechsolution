@@ -28,6 +28,17 @@ import {
   Palette,
   Grid,
   FileCode,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  LogOut,
+  CheckCircle2,
+  AlertCircle,
+  ToggleLeft,
+  ToggleRight,
+  ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -335,6 +346,88 @@ const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [currentPath, isAnyToolRoute]);
 
+  // Secret 5-Click Developer Trigger
+  const logoClicksRef = useRef<number>(0);
+  const lastLogoClickTimeRef = useRef<number>(0);
+  const [showDevAuthModal, setShowDevAuthModal] = useState<boolean>(false);
+  const [isDevLoggedIn, setIsDevLoggedIn] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('aton_dev_auth') === 'true';
+  });
+  const [devEmail, setDevEmail] = useState<string>('');
+  const [devPassword, setDevPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [devAuthError, setDevAuthError] = useState<string>('');
+  const [adsBlockedForDev, setAdsBlockedForDev] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('adsense_developer_block') === 'true';
+  });
+
+  // Listen to adsense-dev-mode-change events
+  useEffect(() => {
+    const handleDevModeChange = () => {
+      setAdsBlockedForDev(localStorage.getItem('adsense_developer_block') === 'true');
+    };
+    window.addEventListener('adsense-dev-mode-change', handleDevModeChange);
+    return () => window.removeEventListener('adsense-dev-mode-change', handleDevModeChange);
+  }, []);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const now = Date.now();
+    if (now - lastLogoClickTimeRef.current > 3000) {
+      logoClicksRef.current = 1;
+    } else {
+      logoClicksRef.current += 1;
+    }
+    lastLogoClickTimeRef.current = now;
+
+    if (logoClicksRef.current >= 5) {
+      e.preventDefault();
+      e.stopPropagation();
+      logoClicksRef.current = 0;
+      setDevAuthError('');
+      setShowDevAuthModal(true);
+      return;
+    }
+
+    handleLinkClick(e, 'home');
+  };
+
+  const handleDevLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      devEmail.trim().toLowerCase() === 'yogeshgangji22@gmail.com' &&
+      devPassword === 'Gangji@123'
+    ) {
+      localStorage.setItem('aton_dev_auth', 'true');
+      localStorage.setItem('aton_dev_user', 'yogeshgangji22@gmail.com');
+      setIsDevLoggedIn(true);
+      setDevAuthError('');
+      setDevPassword('');
+    } else {
+      setDevAuthError('Invalid credentials! Email or password is incorrect.');
+    }
+  };
+
+  const handleDevLogout = () => {
+    localStorage.removeItem('aton_dev_auth');
+    localStorage.removeItem('aton_dev_user');
+    setIsDevLoggedIn(false);
+    setDevPassword('');
+    setShowDevAuthModal(false);
+  };
+
+  const toggleAdsForDev = (shouldBlock: boolean) => {
+    if (shouldBlock) {
+      localStorage.setItem('adsense_developer_block', 'true');
+      setAdsBlockedForDev(true);
+    } else {
+      localStorage.removeItem('adsense_developer_block');
+      setAdsBlockedForDev(false);
+    }
+    window.dispatchEvent(new Event('adsense-dev-mode-change'));
+  };
+
   const handleLinkClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     setToolsDropdownOpen(false);
@@ -362,8 +455,8 @@ const Navbar: React.FC<NavbarProps> = ({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div onClick={(e) => handleLinkClick(e, 'home')} className="cursor-pointer">
+          {/* Logo with 5-Click Secret Developer Trigger */}
+          <div onClick={handleLogoClick} className="cursor-pointer select-none" title="ATON TECH Solutions">
             <Logo size={42} showText={true} inverted={!isScrolled && !isDarkMode} />
           </div>
 
@@ -752,6 +845,238 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Secret Developer Portal Modal (Triggered by 5 Clicks on Logo) */}
+      {showDevAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto relative text-gray-900 dark:text-white">
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowDevAuthModal(false);
+                setDevAuthError('');
+              }}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {!isDevLoggedIn ? (
+              /* Developer Login Screen */
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-royalBlue/10 dark:bg-royalBlue/20 text-royalBlue dark:text-blue-400 flex items-center justify-center shadow-inner">
+                    <Lock className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight font-display">
+                    Developer Portal
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                    Secret administrative access. Enter authorized credentials to manage site controls.
+                  </p>
+                </div>
+
+                {devAuthError && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-center gap-2.5 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{devAuthError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleDevLogin} className="space-y-4" autoComplete="off">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
+                      Developer Email ID
+                    </label>
+                    <input
+                      type="email"
+                      name="dev_admin_email"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck="false"
+                      value={devEmail}
+                      onChange={(e) => setDevEmail(e.target.value)}
+                      placeholder="Enter developer email ID"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-royalBlue dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="dev_admin_password"
+                        autoComplete="new-password"
+                        value={devPassword}
+                        onChange={(e) => setDevPassword(e.target.value)}
+                        placeholder="Enter developer password"
+                        required
+                        className="w-full px-4 py-3 pr-11 rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-royalBlue dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 px-4 rounded-xl bg-orange-gradient text-white font-black text-sm uppercase tracking-wider shadow-lg hover:shadow-orange-500/20 active:scale-98 transition-all"
+                  >
+                    Authenticate & Enter
+                  </button>
+                </form>
+              </div>
+            ) : (
+              /* Developer Dashboard Screen */
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-800 pb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black tracking-tight font-display">
+                      Developer Control Panel
+                    </h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        yogeshgangji22@gmail.com
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ad Control Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-wider text-gray-400">
+                      AdSense Advertising Control
+                    </span>
+                    <span
+                      className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                        adsBlockedForDev
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300'
+                      }`}
+                    >
+                      {adsBlockedForDev ? '🛡️ Ads Disabled (Paused for Dev)' : '🟢 Ads Enabled (Live)'}
+                    </span>
+                  </div>
+
+                  <div
+                    className={`p-5 rounded-2xl border transition-all ${
+                      adsBlockedForDev
+                        ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-850'
+                        : 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-850'
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                          {adsBlockedForDev ? (
+                            <>
+                              <ShieldAlert className="w-4 h-4 text-amber-600" />
+                              <span>Safe Mode Active (Ads Paused)</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <span>Live Ads Active</span>
+                            </>
+                          )}
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                          {adsBlockedForDev
+                            ? 'Google Ads are completely paused for your browser. You can freely visit and test all tools without risking Invalid Traffic suspensions.'
+                            : 'Google Ads are allowed to render on your browser. Note: Do not click on your own ads to prevent AdSense policy violations.'}
+                        </p>
+                      </div>
+
+                      {/* Main Ad Toggle Button */}
+                      <button
+                        onClick={() => toggleAdsForDev(!adsBlockedForDev)}
+                        className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-98 ${
+                          adsBlockedForDev
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-amber-600 hover:bg-amber-700 text-white'
+                        }`}
+                      >
+                        {adsBlockedForDev ? (
+                          <>
+                            <ToggleLeft className="w-5 h-5" />
+                            <span>Click to ENABLE Live Ads</span>
+                          </>
+                        ) : (
+                          <>
+                            <ToggleRight className="w-5 h-5" />
+                            <span>Click to DISABLE Ads (Safe Mode)</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AdSense Info Details */}
+                <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-800 space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>Publisher ID:</span>
+                    <span className="font-mono font-bold text-royalBlue dark:text-blue-400">
+                      pub-6257342305698628
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>Client Tag:</span>
+                    <span className="font-mono text-gray-700 dark:text-gray-300">
+                      ca-pub-6257342305698628
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>Google Auto Ads:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                      Configured in &lt;head&gt;
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                    <span>ads.txt Status:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                      Verified in /public/ads.txt
+                    </span>
+                  </div>
+                </div>
+
+                {/* Footer Controls: Logout & Close */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-800">
+                  <button
+                    onClick={handleDevLogout}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowDevAuthModal(false)}
+                    className="px-5 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 font-bold text-xs hover:opacity-90 transition-opacity"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

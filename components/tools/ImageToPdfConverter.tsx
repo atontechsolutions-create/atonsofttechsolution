@@ -53,8 +53,30 @@ const ImageToPdfConverter: React.FC<ImageToPdfConverterProps> = ({
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
   const [generatedFileName, setGeneratedFileName] = useState<string>('converted-document.pdf');
   const [previewModalImg, setPreviewModalImg] = useState<ImageFile | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
 
   const handleFiles = (files: FileList | File[]) => {
     const list = Array.from(files);
@@ -367,7 +389,14 @@ const ImageToPdfConverter: React.FC<ImageToPdfConverterProps> = ({
         {images.length === 0 ? (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-rose-300 dark:border-rose-900/60 hover:border-rose-500 dark:hover:border-rose-400 rounded-3xl p-10 sm:p-16 text-center cursor-pointer transition-all bg-white dark:bg-slate-900/60 hover:bg-rose-50/30 group shadow-sm"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-3xl p-10 sm:p-16 text-center cursor-pointer transition-all group shadow-sm ${
+              isDragging
+                ? 'border-rose-600 bg-rose-50/80 dark:bg-rose-950/40 ring-4 ring-rose-500/20 scale-[0.99]'
+                : 'border-rose-300 dark:border-rose-900/60 hover:border-rose-500 dark:hover:border-rose-400 bg-white dark:bg-slate-900/60 hover:bg-rose-50/30'
+            }`}
           >
             <input
               ref={fileInputRef}

@@ -1,0 +1,7 @@
+# Robots.txt for ATON TECH Solutions
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Sitemap index
+Sitemap: https://www.atontechsolutions.com/sitemap.xml

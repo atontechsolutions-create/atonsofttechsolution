@@ -45,6 +45,7 @@ import PasswordGenerator from './components/tools/PasswordGenerator';
 import SpeakerTester from './components/tools/SpeakerTester';
 import ScreenResolutionChecker from './components/tools/ScreenResolutionChecker';
 import DeadPixelTester from './components/tools/DeadPixelTester';
+import KeyboardTester from './components/tools/KeyboardTester';
 import IpChecker from './components/tools/IpChecker';
 import RemoveDuplicates from './components/tools/RemoveDuplicates';
 import { Toaster } from 'react-hot-toast';
@@ -206,6 +207,7 @@ const App: React.FC = () => {
   const isSpeakerTester = normalizedPath === '/tools/speaker-tester';
   const isScreenRes = normalizedPath === '/tools/screen-resolution-checker';
   const isDeadPixel = normalizedPath === '/tools/dead-pixel-test';
+  const isKeyboardTester = normalizedPath === '/tools/keyboard-tester';
   const isIpChecker = normalizedPath === '/tools/ip-checker';
   const isRemoveDupes = normalizedPath === '/tools/remove-duplicate-lines';
   const isSignatureBgRemover =
@@ -473,6 +475,13 @@ const App: React.FC = () => {
       ) : isDeadPixel ? (
         <main className="pt-24 sm:pt-28">
           <DeadPixelTester
+            onNavigateHome={handleScrollToSection}
+            onNavigateToTool={navigateToRoute}
+          />
+        </main>
+      ) : isKeyboardTester ? (
+        <main className="pt-24 sm:pt-28">
+          <KeyboardTester
             onNavigateHome={handleScrollToSection}
             onNavigateToTool={navigateToRoute}
           />

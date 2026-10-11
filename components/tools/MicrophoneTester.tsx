@@ -5,11 +5,12 @@ import {
   Play,
   Square,
   Volume2,
-  RefreshCw,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
   Share2,
+  RefreshCw,
+  Activity,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SuggestedTools from './SuggestedTools';
@@ -20,7 +21,7 @@ interface MicrophoneTesterProps {
   onNavigateToTool?: (path: string) => void;
 }
 
-const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onNavigateToTool }) => {
+const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateToTool }) => {
   const [isListening, setIsListening] = useState(false);
   const [volumeLevel, setVolumeLevel] = useState(0);
   const [peakLevel, setPeakLevel] = useState(0);
@@ -28,6 +29,7 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [activeDeviceName, setActiveDeviceName] = useState<string>('');
 
   // Recording playback test
   const [isRecording, setIsRecording] = useState(false);
@@ -43,17 +45,31 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
   const audioChunksRef = useRef<Blob[]>([]);
   const recordedAudioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  useEffect(() => {
-    // List available microphones
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then((devices) => {
+  const refreshAudioDevices = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.enumerateDevices) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
         const mics = devices.filter((d) => d.kind === 'audioinput');
         setAudioDevices(mics);
         if (mics.length > 0 && !selectedDeviceId) {
           setSelectedDeviceId(mics[0].deviceId);
         }
-      }).catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    refreshAudioDevices();
+
+    // Listen for device connects / disconnects (e.g. plugging in headset)
+    if (navigator.mediaDevices && 'ondevicechange' in navigator.mediaDevices) {
+      navigator.mediaDevices.ondevicechange = () => {
+        refreshAudioDevices();
+      };
     }
 
     return () => {
@@ -61,38 +77,75 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
       if (recordedAudioUrl) {
         URL.revokeObjectURL(recordedAudioUrl);
       }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, []);
 
   const startMicrophone = async (deviceId?: string) => {
     try {
       setErrorMessage('');
+
+      // Check if getUserMedia is supported
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia is not supported on this browser or connection is not secure (requires HTTPS or localhost).');
+      }
+
       if (micStreamRef.current) {
         stopMicrophone();
       }
 
-      const constraints: MediaStreamConstraints = {
+      // First try with explicit deviceId if selected, fallback cleanly if constraint fails
+      let stream: MediaStream;
+      const primaryConstraints: MediaStreamConstraints = {
         audio: deviceId ? { deviceId: { exact: deviceId } } : true,
         video: false,
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(primaryConstraints);
+      } catch (err: unknown) {
+        const e = err as Error;
+        // If exact device failed or was unplugged, fallback to general default mic
+        if (deviceId && (e.name === 'OverconstrainedError' || e.name === 'NotFoundError')) {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        } else {
+          throw err;
+        }
+      }
+
       micStreamRef.current = stream;
       setHasPermission(true);
       setIsListening(true);
 
-      // Re-enumerate to get friendly device labels
+      // Track active device label
+      const activeTrack = stream.getAudioTracks()[0];
+      if (activeTrack) {
+        setActiveDeviceName(activeTrack.label || 'Default Microphone');
+      }
+
+      // Re-enumerate devices so browser gives us real friendly names now that permission is granted
       const devices = await navigator.mediaDevices.enumerateDevices();
       const mics = devices.filter((d) => d.kind === 'audioinput');
       setAudioDevices(mics);
+      if (mics.length > 0 && !selectedDeviceId) {
+        setSelectedDeviceId(mics[0].deviceId);
+      }
 
-      // Audio analysis setup
+      // Audio analysis setup with cross-browser compatibility
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const audioCtx = new AudioCtx();
       audioContextRef.current = audioCtx;
 
+      // Crucial: Browsers autoplay policy suspends AudioContext until resumed
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.6;
       analyserRef.current = analyser;
 
       const source = audioCtx.createMediaStreamSource(stream);
@@ -100,36 +153,91 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
 
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
+      const timeDataArray = new Uint8Array(bufferLength);
 
       const checkVolume = () => {
         if (!analyserRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
 
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
+        // Ensure AudioContext isn't suspended mid-stream
+        if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+          audioContextRef.current.resume().catch(() => {});
         }
-        const average = sum / bufferLength;
-        const normalized = Math.min(100, Math.round((average / 128) * 100));
 
-        setVolumeLevel(normalized);
-        setPeakLevel((prev) => Math.max(prev, normalized));
+        analyserRef.current.getByteFrequencyData(dataArray);
+        analyserRef.current.getByteTimeDomainData(timeDataArray);
+
+        // Calculate Root-Mean-Square (RMS) for natural, accurate audio level detection
+        let sumSquares = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const normalized = (timeDataArray[i] - 128) / 128;
+          sumSquares += normalized * normalized;
+        }
+        const rms = Math.sqrt(sumSquares / bufferLength);
+
+        // Also check frequency average
+        let freqSum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          freqSum += dataArray[i];
+        }
+        const freqAverage = freqSum / bufferLength;
+
+        // Combine for a very responsive, realistic 0-100% volume level meter
+        const levelFromRms = Math.min(100, Math.round(rms * 220));
+        const levelFromFreq = Math.min(100, Math.round((freqAverage / 128) * 100));
+        const finalLevel = Math.max(levelFromRms, levelFromFreq);
+
+        setVolumeLevel(finalLevel);
+        setPeakLevel((prev) => Math.max(prev, finalLevel));
+
+        // Draw live audio waveform on canvas if present
+        if (canvasRef.current) {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#1E5EFF';
+            ctx.beginPath();
+
+            const sliceWidth = (canvas.width * 1.0) / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+              const v = timeDataArray[i] / 128.0;
+              const y = (v * canvas.height) / 2;
+
+              if (i === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+              x += sliceWidth;
+            }
+
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+          }
+        }
 
         animFrameRef.current = requestAnimationFrame(checkVolume);
       };
 
       checkVolume();
-      toast.success('Microphone activated! Speak to test volume levels.');
+      toast.success('Microphone connected successfully! Speak now.');
     } catch (err: unknown) {
       const error = err as Error;
       setIsListening(false);
       setHasPermission(false);
+      setVolumeLevel(0);
+
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        setErrorMessage('Microphone access was denied. Please allow microphone permissions in your browser address bar.');
+        setErrorMessage('Microphone permission was denied. Click the lock/settings icon in your browser address bar and change Microphone to "Allow", then try again.');
       } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        setErrorMessage('No microphone device was detected on your computer or phone.');
+        setErrorMessage('No microphone device was detected. Please plug in or enable your microphone/headset and retry.');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        setErrorMessage('Microphone is in use by another app (e.g., Zoom, Google Meet, Teams, or Skype). Please close them and test again.');
       } else {
-        setErrorMessage(`Unable to access microphone: ${error.message || 'Unknown error'}`);
+        setErrorMessage(`Unable to access microphone: ${error.message || 'Microphone device could not be started.'}`);
       }
       toast.error('Could not access microphone.');
     }
@@ -161,27 +269,41 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
 
     try {
       audioChunksRef.current = [];
-      const mediaRecorder = new MediaRecorder(micStreamRef.current);
+      
+      // Determine optimal audio mimeType supported by the browser
+      let mimeType = 'audio/webm';
+      if (!MediaRecorder.isTypeSupported('audio/webm')) {
+        if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+          mimeType = 'audio/ogg';
+        } else {
+          mimeType = '';
+        }
+      }
+
+      const options = mimeType ? { mimeType } : undefined;
+      const mediaRecorder = new MediaRecorder(micStreamRef.current, options);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' });
         if (recordedAudioUrl) {
           URL.revokeObjectURL(recordedAudioUrl);
         }
         const url = URL.createObjectURL(audioBlob);
         setRecordedAudioUrl(url);
         setIsRecording(false);
-        toast.success('5-second sample recorded! Click Play to hear yourself.');
+        toast.success('Sample recorded! Click Play to verify your voice quality.');
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(250);
       setIsRecording(true);
       setRecordSecondsLeft(5);
 
@@ -209,7 +331,10 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
     const audio = new Audio(recordedAudioUrl);
     recordedAudioRef.current = audio;
     setIsPlayingRecorded(true);
-    audio.play();
+    audio.play().catch(() => {
+      setIsPlayingRecorded(false);
+      toast.error('Failed to play recorded sample.');
+    });
     audio.onended = () => setIsPlayingRecorded(false);
     audio.onerror = () => setIsPlayingRecorded(false);
   };
@@ -221,12 +346,14 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
     }
   };
 
+  const resetPeak = () => {
+    setPeakLevel(0);
+    toast.success('Peak meter reset');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-8 px-4 sm:px-6 lg:px-8">
-      {/* Top Ad Banner */}
-      <div className="max-w-5xl mx-auto mb-6">
-        <AdSenseUnit format="horizontal" />
-      </div>
+      <AdSenseUnit format="horizontal" />
 
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header Breadcrumbs & Title */}
@@ -244,7 +371,7 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">Online Microphone Tester</h1>
             <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl">
-              Test your mic audio input, live volume level meter, and record a 5-second playback test before job interviews or video meetings. 100% private in browser.
+              Test your mic audio input with real-time volume meters, live waveform visualizer, and record a 5-second playback test before job interviews or video calls. 100% private in browser.
             </p>
           </div>
           <div className="flex items-center gap-2 self-center sm:self-auto">
@@ -277,10 +404,12 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                    {isListening ? 'Microphone Active' : 'Microphone Inactive'}
+                    {isListening ? 'Microphone Active' : 'Microphone Ready'}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {isListening ? 'Listening for audio input...' : 'Click "Start Test" to enable browser audio capture'}
+                    {isListening
+                      ? activeDeviceName || 'Listening for audio input...'
+                      : 'Click "Start Mic Test" below to enable audio detection'}
                   </p>
                 </div>
               </div>
@@ -290,14 +419,14 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
                 {!isListening ? (
                   <button
                     onClick={() => startMicrophone(selectedDeviceId)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-royalBlue hover:bg-royalBlue/90 text-white font-medium text-sm shadow-sm transition hover:scale-105 active:scale-95"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-royalBlue hover:bg-royalBlue/90 text-white font-bold text-sm shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <Mic className="w-4 h-4" /> Start Mic Test
                   </button>
                 ) : (
                   <button
                     onClick={stopMicrophone}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-sm shadow-sm transition active:scale-95"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md transition active:scale-95 cursor-pointer"
                   >
                     <Square className="w-4 h-4 fill-current" /> Stop Test
                   </button>
@@ -309,9 +438,17 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
             {errorMessage && (
               <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 text-sm flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
-                <div>
-                  <p className="font-semibold">Microphone Access Error</p>
-                  <p className="text-xs mt-0.5 text-red-700 dark:text-red-400">{errorMessage}</p>
+                <div className="space-y-1">
+                  <p className="font-semibold">Microphone Access Notice</p>
+                  <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">{errorMessage}</p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => startMicrophone(selectedDeviceId)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Try Again
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -319,9 +456,17 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
             {/* Audio Device Selector */}
             {audioDevices.length > 0 && (
               <div className="pt-2">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  Select Input Device:
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Input Device:
+                  </label>
+                  <button
+                    onClick={refreshAudioDevices}
+                    className="text-[11px] text-royalBlue dark:text-sky-400 hover:underline flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Refresh Devices
+                  </button>
+                </div>
                 <select
                   value={selectedDeviceId}
                   onChange={(e) => handleDeviceChange(e.target.value)}
@@ -336,29 +481,55 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
               </div>
             )}
 
+            {/* Live Waveform Canvas */}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-royalBlue" /> Live Sound Waveform
+                </span>
+                <span>{isListening ? 'Capturing audio...' : 'Inactive'}</span>
+              </div>
+              <div className="w-full h-16 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center p-1 border border-slate-800">
+                <canvas
+                  ref={canvasRef}
+                  width={600}
+                  height={60}
+                  className="w-full h-full block"
+                />
+              </div>
+            </div>
+
             {/* Volume Level Meter Visualizer */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-slate-500" /> Real-time Volume Level
+                  <Volume2 className="w-4 h-4 text-slate-500" /> Volume Intensity Meter
                 </span>
-                <span className="font-mono font-bold text-royalBlue dark:text-sky-400">{volumeLevel}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-royalBlue dark:text-sky-400 text-base">{volumeLevel}%</span>
+                  <button
+                    onClick={resetPeak}
+                    className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline"
+                  >
+                    Reset Peak
+                  </button>
+                </div>
               </div>
 
               {/* Segmented bar visualizer */}
-              <div className="h-6 w-full bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden p-1 flex items-center gap-1">
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const threshold = (i / 30) * 100;
+              <div className="h-7 w-full bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden p-1.5 flex items-center gap-1">
+                {Array.from({ length: 32 }).map((_, i) => {
+                  const threshold = (i / 32) * 100;
                   const isActive = volumeLevel >= threshold;
                   let color = 'bg-emerald-500';
-                  if (i > 18) color = 'bg-amber-500';
-                  if (i > 24) color = 'bg-red-500';
+                  if (i > 20) color = 'bg-amber-500';
+                  if (i > 26) color = 'bg-red-500';
 
                   return (
                     <div
                       key={i}
                       className={`h-full flex-1 rounded-sm transition-all duration-75 ${
-                        isActive ? color : 'bg-slate-200 dark:bg-slate-700 opacity-40'
+                        isActive ? `${color} shadow-sm` : 'bg-slate-200 dark:bg-slate-700 opacity-40'
                       }`}
                     />
                   );
@@ -366,38 +537,41 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
               </div>
 
               <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-                <span>0 dB (Silent)</span>
-                <span>Normal Speech</span>
-                <span>Peak ({peakLevel}%)</span>
+                <span>0% (Silence)</span>
+                <span className="text-emerald-500 font-semibold">Normal Voice Range</span>
+                <span className="text-royalBlue dark:text-sky-400 font-bold">Peak: {peakLevel}%</span>
               </div>
             </div>
 
             {/* 5-Second Test Recording Section */}
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                 Playback Voice Check (Hear Yourself)
               </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                Record a 5-second sample to verify if your voice is clear, muffled, or too quiet.
+              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={startRecordingTest}
                   disabled={!isListening || isRecording}
-                  className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition ${
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition cursor-pointer ${
                     isRecording
                       ? 'bg-amber-500 text-white animate-pulse cursor-wait'
                       : !isListening
                       ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
                   }`}
                 >
                   <Mic className="w-4 h-4" />
-                  {isRecording ? `Recording... (${recordSecondsLeft}s)` : 'Record 5s Test Sample'}
+                  {isRecording ? `Recording... (${recordSecondsLeft}s left)` : 'Record 5s Test Sample'}
                 </button>
 
                 {recordedAudioUrl && (
                   <button
                     onClick={playRecordedAudio}
                     disabled={isPlayingRecorded}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-royalBlue text-white hover:bg-royalBlue/90 transition shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-royalBlue text-white hover:bg-royalBlue/90 transition shadow-sm cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-current" />
                     {isPlayingRecorded ? 'Playing Audio...' : 'Play Back Recording'}
@@ -406,7 +580,7 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
 
                 {recordedAudioUrl && (
                   <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
-                    <CheckCircle2 className="w-4 h-4" /> Sample ready
+                    <CheckCircle2 className="w-4 h-4" /> Sample recorded!
                   </span>
                 )}
               </div>
@@ -421,7 +595,7 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
               </h3>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-slate-600 dark:text-slate-400">Browser Audio Support</span>
+                  <span className="text-slate-600 dark:text-slate-400">Web Audio API</span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">Supported</span>
                 </li>
                 <li className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -439,6 +613,12 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
                   </span>
                 </li>
                 <li className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-600 dark:text-slate-400">Input Stream</span>
+                  <span className={`font-semibold ${isListening ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                    {isListening ? 'Active (Live)' : 'Idle'}
+                  </span>
+                </li>
+                <li className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">Mics Detected</span>
                   <span className="font-semibold">{audioDevices.length || (isListening ? '1+' : '0')}</span>
                 </li>
@@ -452,12 +632,13 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
             {/* Quick Tips */}
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 text-xs text-amber-900 dark:text-amber-200 space-y-2">
               <p className="font-bold flex items-center gap-1.5 text-sm text-amber-800 dark:text-amber-300">
-                <HelpCircle className="w-4 h-4" /> Troubleshooting Tips
+                <HelpCircle className="w-4 h-4" /> Quick Troubleshooting
               </p>
-              <ul className="list-disc list-inside space-y-1.5 opacity-90">
-                <li>If the bar doesn't move when speaking, check your physical mute switch.</li>
-                <li>Make sure browser permission is allowed in your address bar lock icon.</li>
-                <li>Ensure Windows or macOS Microphone Privacy settings allow your browser.</li>
+              <ul className="list-disc list-inside space-y-1.5 opacity-90 leading-relaxed">
+                <li>If the bar doesn't move when speaking, check your headset physical mute button.</li>
+                <li>Ensure browser permission is set to <strong>Allow</strong> in the address bar.</li>
+                <li>Make sure Windows or macOS Settings allow your browser to access the microphone.</li>
+                <li>Close other apps like Zoom or Teams if they are locking exclusive mic access.</li>
               </ul>
             </div>
           </div>
@@ -470,10 +651,7 @@ const MicrophoneTester: React.FC<MicrophoneTesterProps> = ({ onNavigateHome, onN
           onNavigateToTool={onNavigateToTool}
         />
 
-        {/* Bottom Ad Unit */}
-        <div className="pt-4">
-          <AdSenseUnit format="horizontal" />
-        </div>
+        <AdSenseUnit format="horizontal" />
       </div>
     </div>
   );
